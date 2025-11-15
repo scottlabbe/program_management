@@ -1,0 +1,7 @@
+district_name,year_end,contact_name,contact_email,source_file
+Baton Rouge,2023-12-31,Business Manager,businessmanager@br.gov,Salary_Report_BatonRouge.xlsx
+Lafayette,2023-12-31,Accountant,accountant@laf.gov,Salary_Report_Lafayette.xlsx
+Monroe,2023-12-31,Accounting Manager,accountingmanager@mon.gov,Salary_Report_Monroe.xlsx
+New Orleans,2023-12-31,Finance Manager,financemanager@nola.gov,Salary_Report_NewOrleans.xlsx
+Northeast Louisiana,2023-12-31,Program Manager,programmanager@nela.gov,Salary_Report_Northeast.xlsx
+Plaquemines,2023-12-31,Business Analyst,businessanalyst@plaq.gov,Salary_Report_Plaquemines.xlsx

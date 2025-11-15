@@ -63,7 +63,7 @@ After cloning/downloading the files, your structure should look like:
 
 ```text
 program_management/
-  extact
+  extract_data/
     test_data/
       Salary_Report_BatonRouge.xlsx
       Salary_Report_Lafayette.xlsx
@@ -134,7 +134,7 @@ Use a prompt along these lines:
 >    - normalizes the data into that schema,
 >    - loads it into a local SQLite database (e.g. `cost_reports.db`), and
 >    - exports the combined results to an Excel or CSV file (e.g. `combined_cost_reports.xlsx`).  
-> 5. Add simple instructions to the `README.md` explaining how to run the scripts in VScode.
+> 5. Add simple instructions to a `RUN.md` explaining how to run the scripts in VScode.
 >
 > Work step-by-step:
 > - First, print the plan for my review.
@@ -162,10 +162,23 @@ python extract_cost_reports.py
 
 (or whatever filename Codex chose)
 
-You should now see outputs (maybe in nested fodlers) such as:
+You should now see outputs such as:
 
 - `cost_reports.db` – SQLite database with combined data.
-- `combined_cost_reports.xlsx` or `.csv` – normalized export.
+- `combined_cost_reports.xlsx` – normalized export (use the `--export` flag for `.csv` instead).
+
+---
+
+## Quick Run in VS Code
+
+1. In VS Code select **Terminal → New Terminal** (it opens in the workspace root by default).  
+2. Run `cd extract_data` so the interpreter picks up the script and `test_data` folder.  
+3. Execute `python extract_cost_reports.py` to generate `cost_reports.db` and `combined_cost_reports.xlsx`.  
+4. Optional flags:  
+   - `--data-dir <path>` if your spreadsheets are somewhere else.  
+   - `--database <path>` to control the SQLite file location.  
+   - `--export <path.ext>` where the extension decides between `.xlsx` and `.csv`.  
+5. Re-run the command any time input files change; the script rebuilds both the database table and export each run.
 
 ---
 

@@ -1,0 +1,25 @@
+district_name,year_end,employee_name,salary,healthcare,retirement,federal_pct,state_pct,source_file
+Baton Rouge,2023-12-31,Keith,22500.0,1800.0,855.0,1.0,0.0,Salary_Report_BatonRouge.xlsx
+Baton Rouge,2023-12-31,Paul,31500.0,2250.0,1350.0,0.75,0.25,Salary_Report_BatonRouge.xlsx
+Baton Rouge,2023-12-31,Taylor,45000.0,3150.0,180.0,0.65,0.45,Salary_Report_BatonRouge.xlsx
+Baton Rouge,2023-12-31,Kiley,18000.0,1350.0,270.0,0.2,0.8,Salary_Report_BatonRouge.xlsx
+Lafayette,2023-12-31,Sean,21600.0,1728.0,820.0,0.15,0.85,Salary_Report_Lafayette.xlsx
+Lafayette,2023-12-31,Dustin,30240.0,2160.0,1296.0,0.4,0.6,Salary_Report_Lafayette.xlsx
+Lafayette,2023-12-31,Adam,43200.0,3024.0,172.0,0.25,0.75,Salary_Report_Lafayette.xlsx
+Lafayette,2023-12-31,Sam,17280.0,1296.0,259.0,0.95,0.05,Salary_Report_Lafayette.xlsx
+Monroe,2023-12-31,Albert,99000.0,3100.0,1500.0,0.99,0.01,Salary_Report_Monroe.xlsx
+Monroe,2023-12-31,Chase,105555.0,3500.0,2000.0,0.35,0.65,Salary_Report_Monroe.xlsx
+Monroe,2023-12-31,Ashley,30000.0,2500.0,500.0,0.25,0.75,Salary_Report_Monroe.xlsx
+Monroe,2023-12-31,Elizabeth,34000.0,2000.0,700.0,0.8,0.2,Salary_Report_Monroe.xlsx
+New Orleans,2023-12-31,John,25000.0,2000.0,950.0,0.95,0.05,Salary_Report_NewOrleans.xlsx
+New Orleans,2023-12-31,Mark,35000.0,2500.0,1500.0,0.85,0.15,Salary_Report_NewOrleans.xlsx
+New Orleans,2023-12-31,Lucy,50000.0,3500.0,200.0,0.7,0.3,Salary_Report_NewOrleans.xlsx
+New Orleans,2023-12-31,Megan,20000.0,1500.0,300.0,0.5,0.5,Salary_Report_NewOrleans.xlsx
+Northeast Louisiana,2023-12-31,Ray,25920.0,2073.0,984.0,0.0,1.0,Salary_Report_Northeast.xlsx
+Northeast Louisiana,2023-12-31,Ryan,36288.0,2592.0,1555.0,0.45,0.55,Salary_Report_Northeast.xlsx
+Northeast Louisiana,2023-12-31,Katie,51840.0,3628.0,206.0,0.15,0.85,Salary_Report_Northeast.xlsx
+Northeast Louisiana,2023-12-31,Heather,20736.0,1555.0,310.0,0.25,0.75,Salary_Report_Northeast.xlsx
+Plaquemines,2023-12-31,Mike,38880.0,3109.0,1476.0,0.3,0.7,Salary_Report_Plaquemines.xlsx
+Plaquemines,2023-12-31,Adam,54432.0,3888.0,2332.0,0.45,0.55,Salary_Report_Plaquemines.xlsx
+Plaquemines,2023-12-31,Kate,77760.0,5442.0,309.0,0.2,0.8,Salary_Report_Plaquemines.xlsx
+Plaquemines,2023-12-31,Heather,31104.0,2332.0,465.0,0.35,0.65,Salary_Report_Plaquemines.xlsx
