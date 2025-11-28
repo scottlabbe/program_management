@@ -11,8 +11,8 @@ This example shows how to use OpenAI’s Codex CLI as a local coding agent to au
 All spreadsheets in this repo use **synthetic data** that mimics real report layouts — never use sensitive or confidential data directly with AI tools unless you fully understand your security and privacy setup.
 
 Follow along with YouTube walkthrough
-Part 1 - Extract Data: https://www.youtube.com/watch?v=kAkkZ_oGTsE
-Part 2 - Validate and Desk Review Data
+- Part 1 - Extract Data: https://youtu.be/kAkkZ_oGTsE
+- Part 2 - Validate and Desk Review Data: https://youtu.be/rD345V1tGus
 
 ---
 
@@ -69,22 +69,7 @@ On first run you’ll be prompted to sign in or configure credentials.
 
 ---
 
-## Repository Layout
-
-After cloning/downloading the files, your structure should look like:
-
-```text
-program_management/
-  extract_data/
-    test_data/
-      Salary_Report_BatonRouge.xlsx
-      Salary_Report_Lafayette.xlsx
-      Salary_Report_Monroe.xlsx
-      Salary_Report_NewOrleans.xlsx
-      Salary_Report_Northeast.xlsx
-      Salary_Report_Plaquemines.xlsx
-  desk_review_test/
-```
+## Test Data - Cost Report Spreadsheets
 
 Each file in the `test_data` includes example tabs like:
 
