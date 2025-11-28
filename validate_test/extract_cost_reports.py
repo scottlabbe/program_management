@@ -36,32 +36,7 @@ CREATE TABLE IF NOT EXISTS contact_info (
     contact_email TEXT,
     source_file TEXT NOT NULL
 );
-
-CREATE TABLE IF NOT EXISTS desk_review_findings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    district_name TEXT NOT NULL,
-    year_end TEXT NOT NULL,
-    report_id TEXT NOT NULL,
-    finding_1_text TEXT NOT NULL,
-    finding_1_x INTEGER NOT NULL,
-    finding_1_y INTEGER NOT NULL,
-    finding_2_text TEXT NOT NULL,
-    finding_2_flag INTEGER NOT NULL,
-    healthcare_pct_of_total_salary REAL,
-    state_salary_threshold NUMERIC,
-    healthcare_threshold NUMERIC
-);
 """
-
-
-STATE_SALARY_THRESHOLD = 60000
-HEALTHCARE_THRESHOLD = 0.07
-
-FINDING_1_TEMPLATE = (
-    "For {x} of {y} employees, the district charged over the ${threshold:,.0f} "
-    "threshold for state-related salary costs."
-)
-FINDING_2_TEXT = "District charged healthcare costs over 7% of total salaries."
 
 
 @dataclass
@@ -138,96 +113,6 @@ def _as_fraction(value) -> Optional[float]:
     if number > 1:
         return number / 100.0
     return number
-
-
-def safe_number(value: Optional[float]) -> float:
-    return float(value) if value is not None else 0.0
-
-
-def calculate_employee_metrics(record: dict) -> dict:
-    """Compute per-employee desk review metrics using extracted fields."""
-
-    salary = safe_number(record.get("salary"))
-    healthcare = safe_number(record.get("healthcare"))
-    retirement = safe_number(record.get("retirement"))
-    total_payroll = salary + healthcare + retirement
-
-    state_pct = record.get("state_pct") or 0.0
-    federal_pct = record.get("federal_pct") or 0.0
-
-    # Percentages in the workbook describe how salary dollars were funded,
-    # so the state/federal portions are calculated on salary only.
-    state_portion = salary * state_pct
-    federal_portion = salary * federal_pct
-
-    healthcare_pct_total = (healthcare / total_payroll) if total_payroll else 0.0
-    retirement_pct_total = (retirement / total_payroll) if total_payroll else 0.0
-
-    return {
-        "total_payroll_costs": total_payroll,
-        "state_portion_of_total_payroll_costs": state_portion,
-        "federal_portion_of_total_payroll_costs": federal_portion,
-        "healthcare_percentage_of_total_payroll_costs": healthcare_pct_total,
-        "retirement_percentage_of_total_payroll_costs": retirement_pct_total,
-    }
-
-
-def perform_desk_review(records: List[dict]) -> List[dict]:
-    """Aggregate per-employee metrics into district-level desk review findings."""
-
-    grouped: Dict[tuple[str, str, str], dict] = {}
-    for record in records:
-        key = (record["district_name"], record["source_file"], record["year_end"])
-        metrics = calculate_employee_metrics(record)
-        bucket = grouped.setdefault(
-            key,
-            {
-                "total_employees": 0,
-                "over_state_threshold": 0,
-                "total_salary": 0.0,
-                "total_healthcare": 0.0,
-            },
-        )
-        bucket["total_employees"] += 1
-        if (
-            metrics["state_portion_of_total_payroll_costs"]
-            > STATE_SALARY_THRESHOLD
-        ):
-            bucket["over_state_threshold"] += 1
-        bucket["total_salary"] += safe_number(record.get("salary"))
-        bucket["total_healthcare"] += safe_number(record.get("healthcare"))
-
-    findings: List[dict] = []
-    for (district, report_id, year_end), bucket in grouped.items():
-        total_salary = bucket["total_salary"]
-        # Apply the healthcare threshold to the aggregate ratio (district totals
-        # divided by total salaries) so reviewers see report-level exposure.
-        healthcare_ratio = (
-            bucket["total_healthcare"] / total_salary if total_salary else 0.0
-        )
-        finding_2_flag = healthcare_ratio > HEALTHCARE_THRESHOLD
-        finding_1_text = FINDING_1_TEMPLATE.format(
-            x=bucket["over_state_threshold"],
-            y=bucket["total_employees"],
-            threshold=STATE_SALARY_THRESHOLD,
-        )
-        findings.append(
-            {
-                "district_name": district,
-                "year_end": year_end,
-                "report_id": report_id,
-                "finding_1_text": finding_1_text,
-                "finding_1_x": bucket["over_state_threshold"],
-                "finding_1_y": bucket["total_employees"],
-                "finding_2_text": FINDING_2_TEXT,
-                "finding_2_flag": finding_2_flag,
-                "healthcare_pct_of_total_salary": healthcare_ratio,
-                "state_salary_threshold": STATE_SALARY_THRESHOLD,
-                "healthcare_threshold": HEALTHCARE_THRESHOLD,
-            }
-        )
-
-    return findings
 
 
 def parse_salary_rows(workbook: Path, metadata: ReportMetadata) -> List[dict]:
@@ -333,16 +218,12 @@ def validate_cost_reports(
 
 
 def persist_to_sqlite(
-    salary_records: List[dict],
-    contact_records: List[dict],
-    desk_review_records: List[dict],
-    database_path: Path,
+    salary_records: List[dict], contact_records: List[dict], database_path: Path
 ) -> None:
     database_path.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(database_path) as conn:
         conn.execute("DROP TABLE IF EXISTS cost_reports")
         conn.execute("DROP TABLE IF EXISTS contact_info")
-        conn.execute("DROP TABLE IF EXISTS desk_review_findings")
         conn.executescript(SCHEMA_SQL)
         conn.executemany(
             """
@@ -398,39 +279,6 @@ def persist_to_sqlite(
                 for r in contact_records
             ],
         )
-        conn.executemany(
-            """
-            INSERT INTO desk_review_findings (
-                district_name,
-                year_end,
-                report_id,
-                finding_1_text,
-                finding_1_x,
-                finding_1_y,
-                finding_2_text,
-                finding_2_flag,
-                healthcare_pct_of_total_salary,
-                state_salary_threshold,
-                healthcare_threshold
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            [
-                (
-                    r["district_name"],
-                    r["year_end"],
-                    r["report_id"],
-                    r["finding_1_text"],
-                    r["finding_1_x"],
-                    r["finding_1_y"],
-                    r["finding_2_text"],
-                    1 if r["finding_2_flag"] else 0,
-                    r["healthcare_pct_of_total_salary"],
-                    r["state_salary_threshold"],
-                    r["healthcare_threshold"],
-                )
-                for r in desk_review_records
-            ],
-        )
 
 
 def export_records(records: List[dict], export_path: Path) -> None:
@@ -445,10 +293,6 @@ def export_records(records: List[dict], export_path: Path) -> None:
 
 
 def export_contact_records(records: List[dict], export_path: Path) -> None:
-    export_records(records, export_path)
-
-
-def export_desk_review(records: List[dict], export_path: Path) -> None:
     export_records(records, export_path)
 
 
@@ -484,12 +328,6 @@ def parse_args() -> argparse.Namespace:
         default=default_root / "contact_info.csv",
         help="Path for contact export (.csv or .xlsx).",
     )
-    parser.add_argument(
-        "--desk-review-export",
-        type=Path,
-        default=default_root / "desk_review_findings.csv",
-        help="Path for desk review summary export (.csv or .xlsx).",
-    )
     return parser.parse_args()
 
 
@@ -512,22 +350,15 @@ def main() -> None:
         reasons = ", ".join(sorted(set(info["errors"]))) or "Unknown reason"
         print(f"Validation failed for {file_name}: {reasons}")
 
-    desk_review_records = perform_desk_review(salary_records)
-
-    persist_to_sqlite(
-        salary_records, contact_records, desk_review_records, args.database
-    )
+    persist_to_sqlite(salary_records, contact_records, args.database)
     export_records(salary_records, args.export)
     export_contact_records(contact_records, args.contact_export)
-    export_desk_review(desk_review_records, args.desk_review_export)
 
     print(f"Loaded {len(salary_records)} salary rows from {len(workbooks)} workbooks.")
     print(f"Captured {len(contact_records)} contact rows.")
-    print(f"Generated desk review summaries for {len(desk_review_records)} reports.")
     print(f"SQLite database: {args.database}")
     print(f"Combined export: {args.export}")
     print(f"Contact export: {args.contact_export}")
-    print(f"Desk review export: {args.desk_review_export}")
 
 
 if __name__ == "__main__":

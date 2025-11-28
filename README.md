@@ -10,6 +10,18 @@ This example shows how to use OpenAI’s Codex CLI as a local coding agent to au
 
 All spreadsheets in this repo use **synthetic data** that mimics real report layouts — never use sensitive or confidential data directly with AI tools unless you fully understand your security and privacy setup.
 
+Follow along with YouTube walkthrough
+Part 1 - Extract Data: https://www.youtube.com/watch?v=kAkkZ_oGTsE
+Part 2 - Validate and Desk Review Data
+
+---
+
+## Project Structure
+
+The `extract` folder is the folder where OpenAI's Codex coding agent builds each step of extract, validation, desk review, reporting and visualization steps. This will grow throughout the video series. 
+
+The folders that end with `..._test` are the folders where I copied the `test_data` folder and the new extract_cost_reports.py file at each step to review and test the output and verify it's exactly what I need. 
+
 ---
 
 ## What You’ll Get
@@ -71,9 +83,10 @@ program_management/
       Salary_Report_NewOrleans.xlsx
       Salary_Report_Northeast.xlsx
       Salary_Report_Plaquemines.xlsx
+  desk_review_test/
 ```
 
-Each file includes example tabs like:
+Each file in the `test_data` includes example tabs like:
 
 - `Input Data`
 - `Salaries`
@@ -120,7 +133,7 @@ Codex should now be running **inside** `program_management`, with access to the 
 
 ---
 
-### 3. Provide a clear prompt to Codex
+### 3. Provide a clear prompt to Codex - Extract Data
 
 Use a prompt along these lines:
 
@@ -150,11 +163,18 @@ Then:
 
 ### 4. Run the generated scripts
 
-Run the instructions provided by Codex.
+Run the instructions provided by Codex or follow the general instructions.
 
 General insturctions: 
-Once Codex has created the extraction script, switch to VScode, in the top menu bar, select 'Terminal -> New Terminal' 
-In the new terminal window, run:
+Once Codex has created the extraction script, copy the resulting extract script and the `test_data` to a new `test` folder.
+
+In VS Code select **Terminal → New Terminal** and navigate to the new test folder (it opens in the workspace root by default). 
+
+```bash
+cd /path/to/program_management/..._test
+```
+
+run:
 
 ```bash
 python extract_cost_reports.py
@@ -166,19 +186,6 @@ You should now see outputs such as:
 
 - `cost_reports.db` – SQLite database with combined data.
 - `combined_cost_reports.xlsx` – normalized export (use the `--export` flag for `.csv` instead).
-
----
-
-## Quick Run in VS Code
-
-1. In VS Code select **Terminal → New Terminal** (it opens in the workspace root by default).  
-2. Run `cd extract_data` so the interpreter picks up the script and `test_data` folder.  
-3. Execute `python extract_cost_reports.py` to generate `cost_reports.db` and `combined_cost_reports.xlsx`.  
-4. Optional flags:  
-   - `--data-dir <path>` if your spreadsheets are somewhere else.  
-   - `--database <path>` to control the SQLite file location.  
-   - `--export <path.ext>` where the extension decides between `.xlsx` and `.csv`.  
-5. Re-run the command any time input files change; the script rebuilds both the database table and export each run.
 
 ---
 
@@ -198,6 +205,77 @@ Before treating this as a trusted tool:
    - re-run and re-check.
 
 Verification is essential, especially if you adapt this pattern for real programs or audits.
+
+---
+
+## Use Codex to Build the Validator
+
+Follow steps 1-2 from above. 
+
+Prompt:
+> Add a validation step that runs after extraction and before desk review. Implement it in a clearly named function (for example, validate_cost_reports(...)).
+> In the `extract` folder, please add:
+> Validation requirements (adapt these to the actual column names you find):
+> - Name fields - All employee name fields must be non-empty text.
+> - Amount fields - All amount fields (e.g., salary, state share, federal share, healthcare, retirement) must be numeric and non-null.
+> - Percent fields - Be numeric, Have values between 0 and 1 and sum to 1. 
+>
+> For each cost report file:
+> Determine whether it passes or fails validation. 
+> - If it fails: Print a clear message to the console with the file name and the reasons (e.g., missing names, invalid amounts, bad percentages).
+> - In the final extracted and validated dataset: Add a column such as validation_passed (boolean) and validation_errors (string or JSON) at the report level or employee level, depending on how the data is structured.
+
+Then:
+
+1. Review the plan Codex prints.  
+2. Approve or adjust as needed.
+
+Follow steps 4-5 to run the resulting code for yourself.
+
+---
+
+## Use Codex to Build the Desk Review Process
+
+Follow steps 1-2 from above. 
+
+Prompt:
+> Add a desk review step that operates per employee/person after validation. Implement it in a function (for example, perform_desk_review(...)).
+> In the `extract` folder, please add:
+> For each employee, calculate:
+> - total_payroll_costs
+> - state_portion_of_total_payroll_costs
+> - federal_portion_of_total_payroll_costs
+> - healthcare_percentage_of_total_payroll_costs
+> - retirement_percentage_of_total_payroll_costs
+>
+> Use the fields already being extracted in cost_report_extract.py. If needed, create helper functions for these calculations and keep the math clearly documented in code comments.
+>
+> Implement the desk review findings
+> Based on the per-employee calculations, implement these two findings at the cost report / district level:
+> Finding #1 Text: “For X of Y employees, the district charged over the $60,000 threshold for state-related salary costs.”
+> Finding #2 Text: “District charged healthcare costs over 7% of total salaries.”
+>
+> - This should be true if the average or aggregate healthcare cost percentage across employees exceeds 7% of total salaries for the report.
+> - Document in code whether you are:
+> - Comparing at the aggregate level, or
+> - Flagging if any individual employee exceeds 7%.
+> - Implement the 7% threshold as a constant so it can be easily changed later.
+>
+> Store these findings in a way that can be exported, for example:
+> One row per cost report in a summary table with:
+> - report_id / file_name
+> - finding_1_text
+> - finding_1_x
+> - finding_1_y
+> - finding_2_text
+> - finding_2_flag (True/False)
+
+Then:
+
+1. Review the plan Codex prints.  
+2. Approve or adjust as needed.
+
+Follow steps 4-5 to run the resulting code for yourself.
 
 ---
 
@@ -221,7 +299,7 @@ Guidelines:
 
 ## Tips
 
-- Be concrete in your instructions to Codex: files, tabs, schema, outputs.
+- Be concrete in your instructions to Codex: files, tabs, data schema, calculations, outputs.
 - Let Codex:
   - propose a plan,
   - implement step-by-step,
